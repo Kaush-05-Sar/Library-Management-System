@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,session
 from datetime import datetime
 import sqlite3, os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -41,20 +41,23 @@ def init_db():
     conn.commit()
     conn.close()
 
-def create_admin():
+def create_default_admin():
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
 
-    username = "admin"
-    password = generate_password_hash("admin123")
-    role = "admin"
+    cur.execute("SELECT id FROM users WHERE username=?", ("admin",))
 
-    cur.execute(
-        "INSERT OR IGNORE INTO users(username,password,role) VALUES(?,?,?)",
-        (username, password, role)
-    )
+    if cur.fetchone() is None:
+        cur.execute(
+            "INSERT INTO users(username,password,role) VALUES(?,?,?)",
+            (
+                "admin",
+                generate_password_hash("admin123"),
+                "admin"
+            )
+        )
+        conn.commit()
 
-    conn.commit()
     conn.close()
 
 # --- Fine Calculation ---
@@ -72,7 +75,38 @@ def calculate_fine(borrow_date, return_date, rate_per_day=2):
 
 
 # --- Routes ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
 
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = sqlite3.connect(DATABASE)
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id, password, role FROM users WHERE username=?",
+            (username,)
+        )
+
+        user = cur.fetchone()
+        conn.close()
+
+        if user and check_password_hash(user[1], password):
+
+            session['user_id'] = user[0]
+            session['role'] = user[2]
+
+            return redirect(url_for('index'))
+
+        return render_template(
+            'login.html',
+            error="Invalid username or password"
+        )
+
+    return render_template('login.html')
 @app.route('/')
 def index():
     conn = sqlite3.connect(DATABASE)
@@ -192,5 +226,5 @@ def pay_fine(id):
 # --- Main entry ---
 if __name__ == '__main__':
     init_db()
-    create_admin()
+    create_default_admin()
     app.run(host='0.0.0.0', port=10000, debug=True)
