@@ -107,6 +107,8 @@ def login():
         )
 
     return render_template('login.html')
+
+    return render_template('login.html')
 @app.route('/')
 def index():
     conn = sqlite3.connect(DATABASE)
