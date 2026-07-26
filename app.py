@@ -257,7 +257,7 @@ def pay_fine(id):
 
 
 # --- Main entry ---
+init_db()
+create_default_admin()
 if __name__ == '__main__':
-    init_db()
-    create_default_admin()
     app.run(host='0.0.0.0', port=10000, debug=True)
