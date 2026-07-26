@@ -111,11 +111,16 @@ def login():
     return render_template('login.html')
 @app.route('/')
 def index():
+
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
     cur.execute('SELECT * FROM books')
     books = cur.fetchall()
     conn.close()
+
     return render_template('index.html', books=books)
 
 
