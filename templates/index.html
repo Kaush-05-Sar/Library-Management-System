@@ -9,9 +9,6 @@
 {% if session['role'] == 'admin' %}
 <a href="{{ url_for('add_book') }}" class="btn btn-primary">➕ Add Book</a>
 {% endif %}
-    <a href="{{ url_for('logout') }}" class="btn btn-danger">
-    Logout
-</a>
   </div>
 
   <table class="table table-hover align-middle">
