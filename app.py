@@ -131,6 +131,10 @@ def index():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_book():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
     if request.method == 'POST':
         title = request.form['title']
         author = request.form['author']
