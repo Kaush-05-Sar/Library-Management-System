@@ -35,7 +35,7 @@
         <td>{{ book[5] or "-" }}</td>
         <td>
           {% if book[6] > 0 %}
-            <span class="text-danger fw-bold">${{ book[6] }}</span>
+            <span class="text-danger fw-bold">Rs.{{ book[6] }}</span>
             <a href="{{ url_for('pay_fine', id=book[0]) }}" class="btn btn-warning btn-sm ms-2">Pay</a>
           {% else %}
             <span class="text-success">No Fine</span>
