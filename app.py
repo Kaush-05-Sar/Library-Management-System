@@ -1,18 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import sqlite3, os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # Ensure database path is correct
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.path.join(BASE_DIR, 'library.db')
 
 
-# --- Initialize database ---
 def init_db():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
+
+    # Books table
     c.execute('''
         CREATE TABLE IF NOT EXISTS books (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,9 +27,35 @@ def init_db():
             fine REAL DEFAULT 0
         )
     ''')
+
+    # Users table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL
+        )
+    ''')
+
     conn.commit()
     conn.close()
 
+def create_admin():
+    conn = sqlite3.connect(DATABASE)
+    cur = conn.cursor()
+
+    username = "admin"
+    password = generate_password_hash("admin123")
+    role = "admin"
+
+    cur.execute(
+        "INSERT OR IGNORE INTO users(username,password,role) VALUES(?,?,?)",
+        (username, password, role)
+    )
+
+    conn.commit()
+    conn.close()
 
 # --- Fine Calculation ---
 def calculate_fine(borrow_date, return_date, rate_per_day=2):
@@ -163,4 +192,5 @@ def pay_fine(id):
 # --- Main entry ---
 if __name__ == '__main__':
     init_db()
+    create_admin()
     app.run(host='0.0.0.0', port=10000, debug=True)
