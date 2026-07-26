@@ -156,6 +156,12 @@ def edit_book(id):
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
 
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
+    
     if request.method == 'POST':
         title = request.form['title']
         author = request.form['author']
@@ -174,6 +180,11 @@ def edit_book(id):
 
 @app.route('/delete/<int:id>')
 def delete_book(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
     cur.execute('DELETE FROM books WHERE id=?', (id,))
@@ -184,6 +195,8 @@ def delete_book(id):
 
 @app.route('/borrow/<int:id>', methods=['GET', 'POST'])
 def borrow_book(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
 
@@ -202,6 +215,8 @@ def borrow_book(id):
 
 @app.route('/return/<int:id>', methods=['GET', 'POST'])
 def return_book(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
 
@@ -224,6 +239,8 @@ def return_book(id):
 
 @app.route('/pay/<int:id>', methods=['GET', 'POST'])
 def pay_fine(id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     conn = sqlite3.connect(DATABASE)
     cur = conn.cursor()
 
